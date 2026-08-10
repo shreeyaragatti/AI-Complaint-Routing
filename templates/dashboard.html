@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - AI Complaint Router</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-robot"></i>
+            <span>AI Complaint Router</span>
+        </div>
+        <div class="nav-links">
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <a href="/submit"><i class="fas fa-plus-circle"></i> Submit Complaint</a>
+            <a href="/dashboard" class="active"><i class="fas fa-chart-bar"></i> Dashboard</a>
+        </div>
+    </nav>
+    
+    <div class="container main-content">
+        <div class="page-header">
+            <h1><i class="fas fa-tachometer-alt"></i> Admin Dashboard</h1>
+            <p>Real-time analytics and complaint management</p>
+            <button class="btn btn-primary" onclick="loadAnalytics()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+        
+        <div id="dashboardContent">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="totalComplaints">0</div>
+                        <div class="stat-label">Total Complaints</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="avgPriority">0</div>
+                        <div class="stat-label">Avg Priority Score</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="pendingCount">0</div>
+                        <div class="stat-label">Pending</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="resolvedCount">0</div>
+                        <div class="stat-label">Resolved</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h3><i class="fas fa-chart-pie"></i> Categories</h3>
+                    <canvas id="categoryChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3><i class="fas fa-chart-bar"></i> Severity Levels</h3>
+                    <canvas id="severityChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3><i class="fas fa-building"></i> Departments</h3>
+                    <canvas id="departmentChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3><i class="fas fa-tasks"></i> Status Overview</h3>
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="table-section">
+                <div class="table-header">
+                    <h3><i class="fas fa-list"></i> Recent Complaints</h3>
+                    <button class="btn btn-small btn-primary" onclick="loadComplaints()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="complaint-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Complaint</th>
+                                <th>Category</th>
+                                <th>Severity</th>
+                                <th>Priority</th>
+                                <th>Department</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="complaintsTableBody">
+                            <tr><td colspan="8" class="loading">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="statusModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Update Status</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="modalComplaintId">
+                <div class="form-group">
+                    <label>New Status</label>
+                    <select id="statusSelect">
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Resolved">Resolved</option>
+                        <option value="Escalated">Escalated</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveStatus()">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let categoryChartInstance = null;
+        let severityChartInstance = null;
+        let departmentChartInstance = null;
+        let statusChartInstance = null;
+        
+        function initCharts(data) {
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            };
+            
+            if (data.by_category && data.by_category.length > 0) {
+                if (categoryChartInstance) categoryChartInstance.destroy();
+                categoryChartInstance = new Chart(document.getElementById('categoryChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.by_category.map(c => c.category),
+                        datasets: [{
+                            data: data.by_category.map(c => c.count),
+                            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#7BC225', '#EA80FC', '#00BCD4', '#8D6E63']
+                        }]
+                    },
+                    options: chartOptions
+                });
+            }
+            
+            if (data.by_severity && data.by_severity.length > 0) {
+                if (severityChartInstance) severityChartInstance.destroy();
+                severityChartInstance = new Chart(document.getElementById('severityChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: data.by_severity.map(s => s.severity),
+                        datasets: [{
+                            label: 'Count',
+                            data: data.by_severity.map(s => s.count),
+                            backgroundColor: ['#FF4444', '#FF8800', '#FFCC00', '#88CC00']
+                        }]
+                    },
+                    options: chartOptions
+                });
+            }
+            
+            if (data.by_department && data.by_department.length > 0) {
+                if (departmentChartInstance) departmentChartInstance.destroy();
+                departmentChartInstance = new Chart(document.getElementById('departmentChart'), {
+                    type: 'pie',
+                    data: {
+                        labels: data.by_department.map(d => d.department),
+                        datasets: [{
+                            data: data.by_department.map(d => d.count),
+                            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#7BC225']
+                        }]
+                    },
+                    options: chartOptions
+                });
+            }
+            
+            if (data.by_status && data.by_status.length > 0) {
+                if (statusChartInstance) statusChartInstance.destroy();
+                statusChartInstance = new Chart(document.getElementById('statusChart'), {
+                    type: 'pie',
+                    data: {
+                        labels: data.by_status.map(s => s.status),
+                        datasets: [{
+                            data: data.by_status.map(s => s.count),
+                            backgroundColor: ['#FFCC00', '#36A2EB', '#4BC0C0', '#9966FF']
+                        }]
+                    },
+                    options: chartOptions
+                });
+            }
+        }
+        
+        async function loadAnalytics() {
+            try {
+                const response = await fetch('/api/analytics');
+                const data = await response.json();
+                
+                document.getElementById('totalComplaints').textContent = data.total || 0;
+                document.getElementById('avgPriority').textContent = data.avg_priority || 0;
+                
+                const pending = data.by_status.find(s => s.status === 'Pending');
+                document.getElementById('pendingCount').textContent = pending ? pending.count : 0;
+                
+                const resolved = data.by_status.find(s => s.status === 'Resolved');
+                document.getElementById('resolvedCount').textContent = resolved ? resolved.count : 0;
+                
+                initCharts(data);
+            } catch (err) {
+                console.error('Error loading analytics:', err);
+            }
+        }
+        
+        async function loadComplaints() {
+            try {
+                const response = await fetch('/api/complaints');
+                const complaints = await response.json();
+                
+                const tbody = document.getElementById('complaintsTableBody');
+                if (complaints.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="no-data">No complaints yet</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = complaints.map(c => {
+                    const severityClass = c.severity === 'CRITICAL' ? 'severity-critical' :
+                                         c.severity === 'HIGH' ? 'severity-high' :
+                                         c.severity === 'MEDIUM' ? 'severity-medium' : 'severity-low';
+                    
+                    const statusClass = c.status === 'Resolved' ? 'status-resolved' :
+                                       c.status === 'In Progress' ? 'status-progress' :
+                                       c.status === 'Escalated' ? 'status-escalated' : 'status-pending';
+                    
+                    const shortText = c.text.length > 60 ? c.text.substring(0, 60) + '...' : c.text;
+                    
+                    return `
+                        <tr>
+                            <td>#${c.id}</td>
+                            <td title="${c.text.replace(/"/g, '&quot;')}">${shortText}</td>
+                            <td>${c.category || '-'}</td>
+                            <td><span class="badge ${severityClass}">${c.severity || '-'}</span></td>
+                            <td><span class="priority-score">${c.priority_score || 0}</span></td>
+                            <td>${c.department || '-'}</td>
+                            <td><span class="badge ${statusClass}">${c.status || 'Pending'}</span></td>
+                            <td>
+                                <button class="btn btn-small btn-primary" onclick="openStatusModal(${c.id})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                ${c.status !== 'Resolved' ? `
+                                <button class="btn btn-small btn-success" onclick="resolveComplaint(${c.id})">
+                                    <i class="fas fa-check"></i>
+                                </button>` : ''}
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error('Error loading complaints:', err);
+            }
+        }
+        
+        async function resolveComplaint(id) {
+            if (!confirm('Mark this complaint as resolved?')) return;
+            try {
+                const response = await fetch(`/api/complaints/${id}/resolve`, { method: 'PUT' });
+                if (response.ok) {
+                    loadComplaints();
+                    loadAnalytics();
+                }
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+        
+        function openStatusModal(id) {
+            document.getElementById('modalComplaintId').value = id;
+            document.getElementById('statusModal').style.display = 'flex';
+        }
+        
+        function closeModal() {
+            document.getElementById('statusModal').style.display = 'none';
+        }
+        
+        async function saveStatus() {
+            const id = document.getElementById('modalComplaintId').value;
+            const status = document.getElementById('statusSelect').value;
+            
+            try {
+                const response = await fetch(`/api/complaints/${id}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                if (response.ok) {
+                    closeModal();
+                    loadComplaints();
+                    loadAnalytics();
+                }
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAnalytics();
+            loadComplaints();
+        });
+    </script>
+</body>
+</html>

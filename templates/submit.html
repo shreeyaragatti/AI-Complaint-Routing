@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Complaint - AI Complaint Router</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-robot"></i>
+            <span>AI Complaint Router</span>
+        </div>
+        <div class="nav-links">
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <a href="/submit" class="active"><i class="fas fa-plus-circle"></i> Submit Complaint</a>
+            <a href="/dashboard"><i class="fas fa-chart-bar"></i> Dashboard</a>
+        </div>
+    </nav>
+    
+    <div class="container main-content">
+        <div class="page-header">
+            <h1><i class="fas fa-paper-plane"></i> Submit a Complaint</h1>
+            <p>Our AI will automatically analyze, classify, and route your complaint</p>
+        </div>
+        
+        <div class="submit-layout">
+            <div class="form-section">
+                <form id="complaintForm">
+                    <div class="form-group">
+                        <label for="name"><i class="fas fa-user"></i> Your Name (Optional)</label>
+                        <input type="text" id="name" name="name" placeholder="Enter your name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contact"><i class="fas fa-phone"></i> Contact (Optional)</label>
+                        <input type="text" id="contact" name="contact" placeholder="Phone or email">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="location"><i class="fas fa-map-marker-alt"></i> Location (Optional)</label>
+                        <input type="text" id="location" name="location" placeholder="Where is the issue?">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="complaintText"><i class="fas fa-file-alt"></i> Complaint Details *</label>
+                        <textarea id="complaintText" name="text" rows="6" 
+                            placeholder="Describe your complaint in detail. For example: 'There has been a major water pipe leakage near the school since morning. Water is flooding the road.'"
+                            required></textarea>
+                        <div class="char-count"><span id="charCount">0</span> characters</div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-large btn-block">
+                        <i class="fas fa-magic"></i> Analyze with AI
+                    </button>
+                </form>
+            </div>
+            
+            <div class="result-section" id="resultSection" style="display:none;">
+                <div class="result-card">
+                    <div class="result-header">
+                        <i class="fas fa-check-circle"></i>
+                        <h3>AI Analysis Complete</h3>
+                    </div>
+                    <div id="resultContent">
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin"></i> Analyzing...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+    <script>
+        const form = document.getElementById('complaintForm');
+        const textarea = document.getElementById('complaintText');
+        const charCount = document.getElementById('charCount');
+        const resultSection = document.getElementById('resultSection');
+        
+        textarea.addEventListener('input', () => {
+            charCount.textContent = textarea.value.length;
+        });
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                text: document.getElementById('complaintText').value,
+                name: document.getElementById('name').value,
+                contact: document.getElementById('contact').value,
+                location: document.getElementById('location').value
+            };
+            
+            const btn = form.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            
+            resultSection.style.display = 'block';
+            document.getElementById('resultContent').innerHTML = 
+                '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> AI is analyzing your complaint...</div>';
+            
+            try {
+                const response = await fetch('/api/complaint', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayResult(result);
+                } else {
+                    document.getElementById('resultContent').innerHTML = 
+                        '<div class="error"><i class="fas fa-exclamation-circle"></i> ' + result.error + '</div>';
+                }
+            } catch (err) {
+                document.getElementById('resultContent').innerHTML = 
+                    '<div class="error"><i class="fas fa-exclamation-circle"></i> Error processing complaint. Please try again.</div>';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-magic"></i> Analyze with AI';
+            }
+        });
+        
+        function displayResult(result) {
+            const severityClass = result.severity === 'CRITICAL' ? 'severity-critical' :
+                                  result.severity === 'HIGH' ? 'severity-high' :
+                                  result.severity === 'MEDIUM' ? 'severity-medium' : 'severity-low';
+            
+            const urgencyClass = result.urgency === 'Immediate' ? 'urgency-high' :
+                                 result.urgency === 'Within 24 hours' ? 'urgency-medium' : 'urgency-low';
+            
+            document.getElementById('resultContent').innerHTML = `
+                <div class="analysis-grid">
+                    <div class="analysis-item">
+                        <div class="analysis-icon"><i class="fas fa-tag"></i></div>
+                        <div class="analysis-label">Category</div>
+                        <div class="analysis-value">${result.category}</div>
+                    </div>
+                    <div class="analysis-item">
+                        <div class="analysis-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="analysis-label">Severity</div>
+                        <div class="analysis-value ${severityClass}">${result.severity}</div>
+                    </div>
+                    <div class="analysis-item highlight">
+                        <div class="analysis-icon"><i class="fas fa-star"></i></div>
+                        <div class="analysis-label">Priority Score</div>
+                        <div class="analysis-value">${result.priority_score}/100</div>
+                    </div>
+                    <div class="analysis-item">
+                        <div class="analysis-icon"><i class="fas fa-building"></i></div>
+                        <div class="analysis-label">Department</div>
+                        <div class="analysis-value">${result.department}</div>
+                    </div>
+                    <div class="analysis-item">
+                        <div class="analysis-icon"><i class="fas fa-clock"></i></div>
+                        <div class="analysis-label">Urgency</div>
+                        <div class="analysis-value ${urgencyClass}">${result.urgency}</div>
+                    </div>
+                    <div class="analysis-item">
+                        <div class="analysis-icon"><i class="fas fa-copy"></i></div>
+                        <div class="analysis-label">Similar Cases</div>
+                        <div class="analysis-value">${result.similar_cases}</div>
+                    </div>
+                    <div class="analysis-item full">
+                        <div class="analysis-icon"><i class="fas fa-hourglass-half"></i></div>
+                        <div class="analysis-label">Predicted SLA</div>
+                        <div class="analysis-value">${result.predicted_sla}</div>
+                    </div>
+                </div>
+                <div class="complaint-id">
+                    <i class="fas fa-hashtag"></i> Complaint ID: ${result.complaint_id}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
