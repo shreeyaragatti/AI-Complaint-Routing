@@ -13,22 +13,18 @@ EXPECTED_COLUMNS = [
     ('department', 'TEXT'),
     ('officer', 'TEXT'),
     ('urgency', 'TEXT'),
-    ('similar_cases', 'INTEGER DEFAULT  0'),
+    ('similar_cases', 'INTEGER DEFAULT 0'),
     ('predicted_sla', 'TEXT'),
     ('location_analysis', 'TEXT'),
     ('historical_data', 'TEXT'),
-    ('status', 'TEXT DEFAULT \'Pending\''),
+    ('status', "TEXT DEFAULT 'Pending'"),
     ('complainant_name', 'TEXT'),
     ('contact', 'TEXT'),
     ('location', 'TEXT'),
-    ('created_at', 'TEXT DEFAULT CURRENT_TIMESTAMP'),
+    ('created_at', "TEXT DEFAULT CURRENT_TIMESTAMP"),
     ('updated_at', 'TEXT'),
     ('resolved_at', 'TEXT'),
 ]
-
-
-def _get_columns(cursor):
-    return {row[1] for row in cursor.execute('PRAGMA table_info(complaints)').fetchall()}
 
 
 class Database:
@@ -61,7 +57,7 @@ class Database:
         ''')
         conn.commit()
 
-        existing = _get_columns(conn.execute)
+        existing = {row[1] for row in conn.execute('PRAGMA table_info(complaints)').fetchall()}
         for col_name, col_type in EXPECTED_COLUMNS:
             if col_name not in existing:
                 conn.execute(f'ALTER TABLE complaints ADD COLUMN {col_name} {col_type}')
