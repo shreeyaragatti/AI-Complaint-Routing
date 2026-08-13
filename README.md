@@ -102,8 +102,8 @@ python seed_data.py
 
 4. Start the Flask server:
 ```bash
-python app.py 
 
+python app.py 
 
 ```
 

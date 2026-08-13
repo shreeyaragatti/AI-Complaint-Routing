@@ -4,6 +4,33 @@ import os
 
 DB_PATH = 'complaints.db'
 
+EXPECTED_COLUMNS = [
+    ('preprocessed_text', 'TEXT'),
+    ('category', 'TEXT'),
+    ('severity', 'TEXT'),
+    ('emotion', 'TEXT'),
+    ('priority_score', 'REAL'),
+    ('department', 'TEXT'),
+    ('officer', 'TEXT'),
+    ('urgency', 'TEXT'),
+    ('similar_cases', 'INTEGER DEFAULT  0'),
+    ('predicted_sla', 'TEXT'),
+    ('location_analysis', 'TEXT'),
+    ('historical_data', 'TEXT'),
+    ('status', 'TEXT DEFAULT \'Pending\''),
+    ('complainant_name', 'TEXT'),
+    ('contact', 'TEXT'),
+    ('location', 'TEXT'),
+    ('created_at', 'TEXT DEFAULT CURRENT_TIMESTAMP'),
+    ('updated_at', 'TEXT'),
+    ('resolved_at', 'TEXT'),
+]
+
+
+def _get_columns(cursor):
+    return {row[1] for row in cursor.execute('PRAGMA table_info(complaints)').fetchall()}
+
+
 class Database:
     def init_db(self):
         conn = sqlite3.connect(DB_PATH)
@@ -32,6 +59,12 @@ class Database:
                 resolved_at TEXT
             )
         ''')
+        conn.commit()
+
+        existing = _get_columns(conn.execute)
+        for col_name, col_type in EXPECTED_COLUMNS:
+            if col_name not in existing:
+                conn.execute(f'ALTER TABLE complaints ADD COLUMN {col_name} {col_type}')
         conn.commit()
         conn.close()
     

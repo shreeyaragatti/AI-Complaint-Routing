@@ -1,8 +1,8 @@
 :root {
-    --primary: #107e43;
-    --primary-dark: #04816a;
-    --secondary: #495015;
-    --success: #22c55e;
+    --primary: #5a0d3e;
+    --primary-dark: #5f1a4b;
+    --secondary: #5998ad;
+    --success: #19bc44;
     --warning: #f59e0b;
     --danger: #ef4444;
     --bg: #f1f5f9;
@@ -76,7 +76,7 @@ button { cursor: pointer; border: none; font-family: inherit; }
 }
 
 .hero {
-    background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, #814c6b 100%);
     color: white;
     padding: 4rem 2rem;
     text-align: center;
