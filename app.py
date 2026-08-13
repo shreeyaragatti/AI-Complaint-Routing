@@ -88,11 +88,21 @@ def get_analytics():
         WHERE department IS NOT NULL GROUP BY department ORDER BY count DESC
     ''').fetchall()]
     
+    stats['by_emotion'] = [dict(r) for r in conn.execute('''
+        SELECT emotion, COUNT(*) as count FROM complaints 
+        WHERE emotion IS NOT NULL GROUP BY emotion ORDER BY count DESC
+    ''').fetchall()]
+    
+    stats['by_officer'] = [dict(r) for r in conn.execute('''
+        SELECT officer, COUNT(*) as count FROM complaints 
+        WHERE officer IS NOT NULL GROUP BY officer ORDER BY count DESC
+    ''').fetchall()]
+    
     avg_priority = conn.execute('SELECT AVG(priority_score) as avg FROM complaints').fetchone()['avg']
     stats['avg_priority'] = round(avg_priority, 1) if avg_priority else 0
     
     stats['recent'] = [dict(r) for r in conn.execute('''
-        SELECT id, text, category, severity, priority_score, department, status, created_at 
+        SELECT id, text, category, severity, emotion, priority_score, department, officer, status, created_at 
         FROM complaints ORDER BY created_at DESC LIMIT 10
     ''').fetchall()]
     

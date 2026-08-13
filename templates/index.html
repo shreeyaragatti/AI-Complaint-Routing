@@ -24,7 +24,7 @@
     <header class="hero">
         <div class="hero-content">
             <h1><i class="fas fa-brain"></i> AI-Powered Complaint Routing</h1>
-            <p class="subtitle">Intelligent categorization, prioritization, and smart department routing</p>
+            <p class="subtitle">Advanced pipeline: NLP preprocessing, multi-model classification, emotion analysis, and smart officer assignment</p>
             <div class="hero-buttons">
                 <a href="/submit" class="btn btn-primary btn-large">
                     <i class="fas fa-paper-plane"></i> Submit a Complaint
@@ -38,49 +38,49 @@
     
     <section class="features">
         <div class="container">
-            <h2 class="section-title">How It Works</h2>
+            <h2 class="section-title">AI Pipeline Architecture</h2>
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <i class="fas fa-language"></i>
+                        <i class="fas fa-filter"></i>
                     </div>
-                    <h3>NLP Understanding</h3>
-                    <p>Automatically understands the complaint content using natural language processing techniques.</p>
+                    <h3>Text Preprocessing</h3>
+                    <p>Normalizes text, removes stopwords, and extracts linguistic features for analysis.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-tags"></i>
                     </div>
-                    <h3>Smart Classification</h3>
-                    <p>Categorizes complaints into relevant departments like Water, Electricity, Roads, etc.</p>
+                    <h3>Category Model</h3>
+                    <p>Classifies complaints into 10+ categories with confidence scoring using keyword analysis.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-exclamation-triangle"></i>
                     </div>
-                    <h3>Severity Detection</h3>
-                    <p>Determines urgency levels from Critical to Low based on keywords and context.</p>
+                    <h3>Severity Model</h3>
+                    <p>Determines CRITICAL, HIGH, MEDIUM, or LOW severity based on context and category-specific keywords.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <i class="fas fa-copy"></i>
+                        <i class="fas fa-smile"></i>
                     </div>
-                    <h3>Duplicate Detection</h3>
-                    <p>Identifies similar complaints to avoid duplicate handling and detect recurring issues.</p>
+                    <h3>Emotion Analysis</h3>
+                    <p>Detects user emotion (Angry, Frustrated, Anxious, Urgent, Neutral) to prioritize sensitive cases.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-star"></i>
                     </div>
-                    <h3>Priority Scoring</h3>
-                    <p>Assigns a priority score (0-100) to help teams handle the most critical issues first.</p>
+                    <h3>Priority Engine</h3>
+                    <p>Weighted scoring combining severity, emotion, similarity, location, and historical data.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-project-diagram"></i>
                     </div>
-                    <h3>Smart Routing</h3>
-                    <p>Routes complaints to the appropriate department with predicted SLA times.</p>
+                    <h3>Smart Assignment</h3>
+                    <p>Routes to the right department, assigns specific officer, and predicts SLA with urgency levels.</p>
                 </div>
             </div>
         </div>
@@ -100,7 +100,7 @@
                     <i class="fas fa-arrow-right"></i>
                 </div>
                 <div class="demo-output">
-                    <h4>AI Output</h4>
+                    <h4>AI Pipeline Output</h4>
                     <div class="output-grid">
                         <div class="output-item">
                             <span class="label">Category</span>
@@ -111,12 +111,20 @@
                             <span class="value severity-high">HIGH</span>
                         </div>
                         <div class="output-item">
+                            <span class="label">Emotion</span>
+                            <span class="value emotion-urgent">Urgent</span>
+                        </div>
+                        <div class="output-item">
                             <span class="label">Priority Score</span>
                             <span class="value">92/100</span>
                         </div>
                         <div class="output-item">
                             <span class="label">Department</span>
                             <span class="value">Water Management</span>
+                        </div>
+                        <div class="output-item">
+                            <span class="label">Assigned Officer</span>
+                            <span class="value">Eng. Ramesh Kumar</span>
                         </div>
                         <div class="output-item">
                             <span class="label">Urgency</span>

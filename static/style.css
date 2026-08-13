@@ -1,13 +1,13 @@
 :root {
-    --primary: #2563eb;
-    --primary-dark: #1d4ed8;
-    --secondary: #64748b;
+    --primary: #107e43;
+    --primary-dark: #04816a;
+    --secondary: #495015;
     --success: #22c55e;
     --warning: #f59e0b;
     --danger: #ef4444;
     --bg: #f1f5f9;
     --card-bg: #ffffff;
-    --text: #1e293b;
+    --text: #595b5e;
     --text-muted: #64748b;
     --border: #e2e8f0;
     --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
@@ -423,6 +423,17 @@ footer {
 .urgency-high { color: var(--danger); }
 .urgency-medium { color: var(--warning); }
 .urgency-low { color: var(--success); }
+
+.emotion-angry { color: #dc2626; }
+.emotion-anxious { color: #ea580c; }
+.emotion-frustrated { color: #d97706; }
+.emotion-urgent { color: #dc2626; }
+.emotion-neutral { color: var(--success); }
+
+.analysis-item.insight {
+    border-left-color: var(--secondary);
+    background: #f8fafc;
+}
 
 .complaint-id {
     margin-top: 1.5rem;

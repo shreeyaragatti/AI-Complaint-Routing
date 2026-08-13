@@ -134,6 +134,11 @@
             const urgencyClass = result.urgency === 'Immediate' ? 'urgency-high' :
                                  result.urgency === 'Within 24 hours' ? 'urgency-medium' : 'urgency-low';
             
+            const emotionClass = result.emotion === 'Angry' ? 'emotion-angry' :
+                                 result.emotion === 'Anxious' ? 'emotion-anxious' :
+                                 result.emotion === 'Frustrated' ? 'emotion-frustrated' :
+                                 result.emotion === 'Urgent' ? 'emotion-urgent' : 'emotion-neutral';
+            
             document.getElementById('resultContent').innerHTML = `
                 <div class="analysis-grid">
                     <div class="analysis-item">
@@ -157,6 +162,16 @@
                         <div class="analysis-value">${result.department}</div>
                     </div>
                     <div class="analysis-item">
+                        <div class="analysis-icon"><i class="fas fa-user-tie"></i></div>
+                        <div class="analysis-label">Assigned Officer</div>
+                        <div class="analysis-value">${result.officer}</div>
+                    </div>
+                    <div class="analysis-item">
+                        <div class="analysis-icon"><i class="fas fa-heart"></i></div>
+                        <div class="analysis-label">Emotion</div>
+                        <div class="analysis-value ${emotionClass}">${result.emotion}</div>
+                    </div>
+                    <div class="analysis-item">
                         <div class="analysis-icon"><i class="fas fa-clock"></i></div>
                         <div class="analysis-label">Urgency</div>
                         <div class="analysis-value ${urgencyClass}">${result.urgency}</div>
@@ -170,6 +185,16 @@
                         <div class="analysis-icon"><i class="fas fa-hourglass-half"></i></div>
                         <div class="analysis-label">Predicted SLA</div>
                         <div class="analysis-value">${result.predicted_sla}</div>
+                    </div>
+                    <div class="analysis-item full insight">
+                        <div class="analysis-icon"><i class="fas fa-map-marker-alt"></i></div>
+                        <div class="analysis-label">Location Analysis</div>
+                        <div class="analysis-value">${result.location_analysis}</div>
+                    </div>
+                    <div class="analysis-item full insight">
+                        <div class="analysis-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="analysis-label">Historical Data</div>
+                        <div class="analysis-value">${result.historical_data}</div>
                     </div>
                 </div>
                 <div class="complaint-id">
